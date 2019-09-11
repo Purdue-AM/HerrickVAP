@@ -1,0 +1,51 @@
+The following is an email I (JC) sent to Aaron detailing how I first went about debugging the cerebrus VAP system, in the hopes that I could cover everything that took us a few weeks to learn at Herrick in a couple of paragraphs. 
+
+
+ 
+Following is the procedure I went through to get the VAP system in Zucrow extruding; feel free to forward this along to anyone who might need it. It's getting pretty long but I thought I'd just throw as much VAP knowledge as I can here. I'll text you some pictures and videos I took of the system. 
+
+
+1. The signal needed to be a ultrasonic sine wave centered around 0 V, i.e. without a DC offset. It should still work with some low range of DC offset, but any offset will reduce the maximum travel of the tip which is what (we think) drives flow. This was done by setting the function generator to 28 kHz, 0V offset, 10 Vpp amplitude, and sending it through the linear amplifier with 20x gain. 
+
+2. Though we did get the transducer buzzing earlier, it started cutting out when I was working with it. I checked the traces, and lo and behold there was a broken pad on the BNC to dental tool connector. You can probably fix it by touching all the pads and pins with a soldering iron. In the meantime, I recommend using the connector I left on there.
+
+3. I'm not sure exactly what leads to tranducer damage, but it seems the transducer that was on the VAP system had been damaged by something. The way you can tell that is at the same amplitude, it has significantly lower vibration at its resonant frequency than another transducer at its respective resonant frequency. Once it's damaged, I've found it won't work again for VAP. My best guess is a combination of high DC offset with maybe dropping it or rough handling in shipping. The transducer I left in the printer seems to be fine. 
+
+4. Once I was using an intact connector and a better transducer, I found the approximate resonance of the transducer with the following steps: rest a light piece of metal on the transducer tip at constant high amplitude, in the 150-400 Vpp range. Tweezers or small allen wrenches work great for this, but screwdrivers or anything with a plastic handle are either too heavy or have too much damping. start around 30kHz and sweep down at 100Hz increments listening for the loudest it gets. Once I got to around 23kHz, I started back at 30kHz and swept up in 100Hz increments up to around 35kHz. You should find two peaks in this range, one above and one below 30kHz. Depending on the tip, syringe, and nozzle one may work better than the other, but on our system the lower one works best. 
+Frequencies I found:
+24kHz for the transducer in the printer, unbent tip (mounted in the printer)
+30.3 kHz for the transducer in the printer, bent tip (holding it by hand outside the printer)
+
+Note: The tip geometry matters a lot. Originally, Dr. Gunduz bent the tips only to make the system smaller to fit onto the monoprice minis. Anecdotally, I've found that the bent tips have a higher Q factor and produce better results, though it is possible to make the system work with unbent tips. I don't have any measurements on if there's an amplitude difference, but if you continue to have problems let me know and we'll take both to Birck to measure on the LDV. 
+
+5. Now that we've identified the resonant frequency, load the syringe nozzle into the hole in the transducer tip. Start with a half turn of the syringe to start the threads in the tip. Turn on the signal at a high gain (output around 150 - 400 Vpp) at the resonant frequency, and watch the tip for motion of the clay. Now that we've connected the syringe to the tip, there will be some resonance shift due to changing the system, but I've found that it's small and should work immediately. If you're unsure if you're at resonance, check again with the tweezers at a few frequencies near the current frequency to make sure. 
+
+Note: This is where temperature sensing helps; it turns out the max temperature gradient at the base of the syringe tip (for our syringes using any material) happens at resonance, meaning the slope of the temperature rise is an accurate measure of resonance. If you would like to add a temperature sensor, we can talk about that. Recreating what we have at Herrick might take a bit of effort, but just adding a single temperature measurement shouldn't take more than a few hours total for design, assembly, and manufacture, and would cost around $40. 
+
+6. Either material is coming out, or it isn't. If it is, great! Grab the champagne and celebrate. If it isn't, try moving the syringe in and out of the transducer tip by rotating it in the threads of the transducer tip. If you see some powder or small particles being slung out of the tip radially (should hit you or land in your lap), don't change the frequency -- it probably just needs a second to warm up. 
+Other things to try: 
+Increasing voltage amplitude
+Using fresh clay
+Increasing back pressure
+fiddling with the contact between the syringe and the transducer
+
+Note: VAP with clay has three main stages of flow I've seen: small particles being thrown radially from the nozzle, a transition flow that forms a helix, and lastly a smooth, steady flow. Generally, the radial flinging only happens if the material in the tip has sat for awhile, and the transition between the helical and smooth flow repeatably happens at 30 degC for the clay. 
+
+Note: If you hear audible screeching, there's a poor mechanical connection. I haven't specifically searched for it but there's a frequency in the 25-27kHz range where my tips will un-screw, and this is often a cause of the screeching. Other times, it just means the syringe has backed out of the tip. 
+
+Note: I've had very limited success with the syringe tips Monique uses. I think it's mostly that we've each spent the time to figure out the specifics of each nozzle, and it'll take some fiddling to become familiar with how those print. If you can't get those printing, I left you some of our syringes and the back stoppers for them -- I recommend loading in clay without air pockets, placing in the back stopper, then using an allen wrench, screwdriver, or some sort of dowel to push on the stopper until the material has reached the tip of the nozzle. This will make initiating flow much easier. 
+
+Note: The stoppers are key, and they should fit into the back of the syringes you all use as well. Without the stopper if the clay has air pockets, the pressurized air can blow through these and through the nozzle, damaging whatever you're printing. 
+
+Note: If the clay dries out, it'll make your life a lot harder. We keep ours in zip-loc baggies. I also don't recommend using clay thinner, which is something Dr. Gunduz has done in the past. It does make the clay significantly less viscous and more sticky, but when I've used clay thinner it's resulted in some odd two-phase flow at the nozzle, where the thinner will run around the clay in the nozzle in an annular ring and higher than typical heating will be present. That could have been due to a multitude of other factors, but I think I'll be steering away from it in the future. 
+
+I apologize this is so long, but I hope there's some info here that will be useful to you. Let me know how it goes!
+
+
+----------------------------------------------------------------------------------
+
+RE: Aaron's question of 'why does measuring the temperature at the nozzle matter?'
+
+As for the plastic/metal temperature vs. printing material temperature, the IR sensor is probably reading the plastic nozzle temperature instead of the material temperature. Using a FLIR IR camera, you can observe that the metal arm heats the most and the nozzle never gets as hot as it does, so measuring the metal is not a good measure of whether or not you're in a safe range. The reason we are using an IR sensor instead of a thermocouple is the mechanical attachment; it's difficult to fix the thermocouple to the nozzle (glue tends to break under ultrasonic vibration), the thermal contact between the thermocouple and the plastic is not good, and the added wire coming off of the nozzle can negatively impact vibrations, acting like a damper. 
+
+Other than that, the viscosity of propellants, clay, and food generally shift exponentially with temperature (following the Arrhenius equation); I think having an accurate understanding of the temperature of the flow will later be instrumental in determining flow rate. 
